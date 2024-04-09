@@ -31,11 +31,10 @@ public class DatabaseConnection implements Closeable {
             boolean databaseExists = new File(BD_NAME + ".db").exists();
             // Get the connection to the database
             connection = DriverManager.getConnection("jdbc:sqlite:" + BD_NAME + ".db");
-
             if (!databaseExists) {
                 // If it doesn't exist, create it and create tables
                 createTables();
-                System.out.println("Database created successfully.");
+                //System.out.println("Database created successfully.");
             }
         } catch (SQLException | ClassNotFoundException e) {
             // Log the error using a logging library
@@ -64,8 +63,7 @@ public class DatabaseConnection implements Closeable {
         String sql = "CREATE TABLE IF NOT EXISTS users ("
                 + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + "username VARCHAR(30) NOT NULL UNIQUE,"  // Ensure usernames are unique
-                + "password VARHCAR(200) NOT NULL,"  // Store hashed and salted password
-                + ")";
+                + "password VARCHAR(200) NOT NULL)";  // Store hashed and salted password
         statement.executeUpdate(sql);
 
 
@@ -75,10 +73,18 @@ public class DatabaseConnection implements Closeable {
                 + "user_id INTEGER NOT NULL,"
                 + "namekey VARCHAR(30) NOT NULL,"
                 + "password VARCHAR(200) NOT NULL,"
-                + "FOREIGN KEY (user_id) REFERENCES users(id),"  // Consider using a separate table for encrypted passwords
-                + ")";
+                + "FOREIGN KEY (user_id) REFERENCES users(id))";  // Consider using a separate table for encrypted passwords
         statement.executeUpdate(sql);
 
+    }
+
+    public boolean isUsersTableEmpty() throws SQLException {
+        try (Statement statement = connection.createStatement()) {
+            ResultSet resultSet = statement.executeQuery("SELECT COUNT(*) FROM users");
+            resultSet.next();
+            int count = resultSet.getInt(1);
+            return count == 0;
+        }
     }
 
     public static boolean validatePassword(String password1, String password2) {
@@ -86,7 +92,7 @@ public class DatabaseConnection implements Closeable {
         //falta agregar logica de hash todavia
       }
 
-    public boolean loginUser(String username, String password) throws SQLException {
+    public int loginUser(String username, String password) throws SQLException {
         PreparedStatement statement = connection.prepareStatement("SELECT id, password FROM users WHERE username = ?");
         statement.setString(1, username);
         ResultSet results = statement.executeQuery();
@@ -95,7 +101,9 @@ public class DatabaseConnection implements Closeable {
             String storedPassword = results.getString("password");
             if (validatePassword(password, storedPassword)) {
                 currentUserId = results.getInt("id");
-                return true;
+                // Log successful login attempt
+                logger.info("Successful login: User '" + username + "' logged in");
+                return currentUserId;
             } else {
                 // Log failed login attempt
                 logger.info("Failed login attempt for user: " + username);
@@ -104,14 +112,16 @@ public class DatabaseConnection implements Closeable {
             // Log username not found
             logger.info("Username not found: " + username);
             }
-        return false; // Incorrect credentials
+        return -1; // Incorrect credentials
         }
 
-    public void addPassword(Password password) throws SQLException {
+    public void addPassword(Password password, int user_id) throws SQLException {
         // Ensure a user is logged in
+        
         if (currentUserId == -1) {
             throw new SQLException("No user is logged in");
         }
+
         PreparedStatement insert = null;
         String query = "INSERT INTO passwords (user_id, namekey, password) VALUES (?, ?, ?)";
         try {
@@ -132,6 +142,7 @@ public class DatabaseConnection implements Closeable {
         }
 
     }
+
 
     public Password getPassword(String nameOfPass) throws SQLException {
         // Ensure a user is logged in
@@ -196,7 +207,58 @@ public class DatabaseConnection implements Closeable {
         update.executeUpdate();
     }
 
+    public boolean passwordNameExists(String name, int user_id) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM passwords WHERE namekey = ? AND user_id = ?";
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, name);
+            statement.setInt(2, user_id);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    int count = resultSet.getInt(1);
+                    return count > 0;
+                }
+            }
+        }
+        return false; // Return false if no result or error occurred
+    }    
 
+    public void createUserAccount(String username, String password){
+        PreparedStatement insert = null;
+        ResultSet resultSet = null;
+        String query = "SELECT COUNT(*) FROM users WHERE username = ?";
+        try {
+            // Check if the username already exists
+            insert = this.connection.prepareStatement(query);
+            insert.setString(1, username);
+            resultSet = insert.executeQuery();
+            if (resultSet.next() && resultSet.getInt(1) > 0) {
+                System.err.println("Username already exists. Please choose a different username.");
+                return; // Exit the method if the username already exists
+            }
+
+        query = "INSERT INTO users (username, password) VALUES (?, ?)";
+        insert = this.connection.prepareStatement(query);
+        insert.setString(1, username);
+        insert.setString(2, password);
+        insert.executeUpdate();
+        }
+        catch (SQLException e) {
+            System.err.println("Error occurred while creating user account: " + e.getMessage());
+            // Handle the SQLException (log, inform user, etc.)
+            // You can re-throw the exception for further handling
+        }
+        finally {
+            try {
+                if (insert != null)
+                    insert.close();
+            } catch (SQLException e) {
+                // Handle any errors that occur while closing the statement
+                // For example, you can print the error message to the console
+                System.err.println("Error occurred while closing PreparedStatement: " + e.getMessage());
+            }
+    }
+
+    }
 }
 
 

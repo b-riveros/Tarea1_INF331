@@ -1,0 +1,14 @@
+17:59:19.921 [com.mypass.Main.main()] INFO  com.mypass.Password - Username not found: lol
+18:50:50.086 [com.mypass.Main.main()] INFO  com.mypass.Password - Successful login: User 'barbara' logged in
+19:33:05.024 [com.mypass.Main.main()] INFO  com.mypass.Password - Successful login: User 'barbara' logged in
+19:56:46.738 [com.mypass.Main.main()] INFO  com.mypass.Password - Successful login: User 'barbara' logged in
+20:06:46.285 [com.mypass.Main.main()] INFO  com.mypass.Password - Username not found: barbar
+20:11:54.722 [com.mypass.Main.main()] INFO  com.mypass.Password - Username not found: bar
+20:13:58.072 [com.mypass.Main.main()] INFO  com.mypass.Password - Username not found: barb
+20:14:07.294 [com.mypass.Main.main()] INFO  com.mypass.Password - Successful login: User 'barbara' logged in
+20:18:40.961 [com.mypass.Main.main()] INFO  com.mypass.Password - Successful login: User 'barbara' logged in
+20:21:15.000 [com.mypass.Main.main()] INFO  com.mypass.Password - Successful login: User 'barbara' logged in
+20:32:47.612 [com.mypass.Main.main()] INFO  com.mypass.Password - Successful login: User 'barbara' logged in
+20:34:13.861 [com.mypass.Main.main()] INFO  com.mypass.Password - Successful login: User 'barbara' logged in
+20:45:21.709 [com.mypass.Main.main()] INFO  com.mypass.Password - Successful login: User 'barbara' logged in
+21:12:10.455 [com.mypass.Main.main()] INFO  com.mypass.Password - Successful login: User 'barbara' logged in

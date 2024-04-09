@@ -1,6 +1,5 @@
 package com.mypass;
 
-import java.io.IOException;
 import java.sql.SQLException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -14,22 +13,10 @@ public class PasswordManagerCLI {
         this.connection = connection;
     }
 
-    public static void main(String[] args) throws SQLException, ClassNotFoundException {
-        try (DatabaseConnection connection = new DatabaseConnection()) {
-            // Use the database connection
-            processCommands(args);
-        } catch (IOException e) {
-            // Handle the IOException
-            //Loggin?
-            e.printStackTrace();
-        } catch (SQLException | ClassNotFoundException e) {
-            // Handle other exceptions if needed
-            // Loggin?
-            e.printStackTrace();
-        }
-    }
 
-    private void processCommands(String[] args) throws SQLException {
+    public void processCommands(String userInput, int user_id) throws SQLException {
+        String[] args = userInput.split("\\s+");
+
         if (args.length < 2) {
             printHelp();
             return;
@@ -45,7 +32,7 @@ public class PasswordManagerCLI {
                     return;
                 }
                 String password = args[2];
-                processAddPassword(name, password);
+                processAddPassword(name, password, user_id);
                 break;
             case "get":
                 processGetPassword(name);
@@ -60,9 +47,6 @@ public class PasswordManagerCLI {
                 }
                 String newName = args[2];
                 processRenamePassword(name, newName);
-                break;
-            case "clear":
-                processClearPasswords();
                 break;
             default:
                 System.out.println("Error: Invalid command. Use 'help' for usage information.");
@@ -83,6 +67,7 @@ public class PasswordManagerCLI {
         }
       }    
     
+      /* 
       private void validatePasswordString(String pass) throws IllegalArgumentException {
         try {
             if (pass.isEmpty()) {
@@ -102,80 +87,7 @@ public class PasswordManagerCLI {
             throw e; // Re-throw the exception for further handling
         }
     }
-
-
-    private void processAddPassword(String name, String password) throws SQLException {
-        // Check for existing password
-        Password existingPassword = null;
-        try {
-            existingPassword = connection.getPassword(name);
-        } catch (SQLException e) {
-            // Handle SQL exception if needed
-            e.printStackTrace();
-        }
-        if (existingPassword != null) {
-            System.out.println("Error: Ya existe una contrasena con la palabra clave '" + name + "' asociada.");
-            return;
-        }
-
-        // Validate password before creating object
-        if (!validatePasswordName(name)) {
-            System.out.println("Error: Password does not meet requirements.");
-            return;
-        }
-        // Create a new Password object and add it to the database
-        Password newPassword = new Password(name, password);
-        try {
-            connection.addPassword(newPassword);
-            System.out.println("Contrasena fue agregada con exito!");
-        } catch (SQLException e) {
-            // Handle SQL exception if needed
-            // Loggin pendiente y etc
-            e.printStackTrace();
-        }
-
-    }
-
-
-    private void processAddPassword(String name, String password) throws SQLException {
-        try {
-            // Validate password name (throws exception for invalid names)
-            validatePasswordName(name);
-    
-            // Validate password using secure hashing (assuming implemented elsewhere)
-            if (!validatePassword(password)) {
-                System.out.println("Error: Password does not meet requirements.");
-                return;
-            }
-    
-            // Check for existing password (unchanged)
-            Password existingPassword = null;
-            try {
-                existingPassword = connection.getPassword(getName(name)); // Assuming getName exists
-            } catch (SQLException e) {
-                // Handle SQL exception if needed
-                e.printStackTrace();
-            }
-            if (existingPassword != null) {
-                System.out.println("Error: Ya existe una contrasena con la palabra clave '" + name + "' asociada.");
-                return;
-            }
-    
-            // Create and add Password object (unchanged)
-            Password newPassword = new Password(name, password);
-            try {
-                connection.addPassword(newPassword);
-                System.out.println("Contrasena fue agregada con exito!");
-            } catch (SQLException e) {
-                // Handle SQL exception if needed
-                // Loggin pendiente y etc
-                e.printStackTrace();
-            }
-        } catch (IllegalArgumentException e) {
-            // Handle invalid password name exception
-            System.out.println(e.getMessage());  // Print the error message from the exception
-        }
-    }
+    */
 
     private void processGetPassword(String name) throws SQLException {
         Password password = connection.getPassword(name);
@@ -200,12 +112,45 @@ public class PasswordManagerCLI {
     }
 
 
-    private void printHelp() {
+
+    
+    private void processAddPassword(String name, String password, int user_id) throws SQLException {
+        try {
+            // Validate password name (throws exception for invalid names)
+            validatePasswordName(name);
+            // AGREGAR VALIDACION DE LA CONSTRASENA
+            // Luego se revisa si ya existe una password con ese nombre
+
+            if (connection.passwordNameExists(name, user_id)) {
+                System.out.println("Error: Ya existe una contrasena con la palabra clave '" + name + "' asociada.");
+                return;
+            }
+            // Create and add Password object (unchanged)
+            Password newPassword = new Password(name, password);
+            try {
+                connection.addPassword(newPassword, user_id);
+                System.out.println("Contrasena fue agregada con exito!");
+            } catch (SQLException e) {
+                // Handle SQL exception if needed
+                // Loggin pendiente y etc
+                e.printStackTrace();
+            }
+        } catch (IllegalArgumentException e) {
+            // Handle invalid password name exception
+            System.out.println(e.getMessage());  // Print the error message from the exception
+        }
+    }
+
+
+
+
+    public void printHelp() {
         System.out.println("MyPass Manager CLI Usage:");
         System.out.println("  add <name> <password>     - Agregar una nueva contrasena");
         System.out.println("  get <name>                - Recuperar una contrasena a traves de la palabra clave");
         System.out.println("  remove <name>             - Eliminar una contrasena");
         System.out.println("  rename <name> <new_name>  - Actualizar una contrasena");
+        System.out.println("  exit                      - Salir");
 
     }
 }
