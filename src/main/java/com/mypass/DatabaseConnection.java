@@ -13,6 +13,9 @@ import java.sql.Statement;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.sql.PreparedStatement;
 
 public class DatabaseConnection implements Closeable {
 
@@ -87,10 +90,10 @@ public class DatabaseConnection implements Closeable {
         }
     }
 
-    public static boolean validatePassword(String password1, String password2) {
+    /*public static boolean validatePassword(String password1, String password2) {
         return password1.equals(password2);
         //falta agregar logica de hash todavia
-      }
+      }*/
 
     public int loginUser(String username, String password) throws SQLException {
         PreparedStatement statement = connection.prepareStatement("SELECT id, password FROM users WHERE username = ?");
@@ -114,6 +117,33 @@ public class DatabaseConnection implements Closeable {
             }
         return -1; // Incorrect credentials
         }
+
+    //Logica HASH MD5
+
+    public String setEncryptedPasswordString(String pass) throws IllegalArgumentException {
+        pass = MD5Util.hash(pass);
+        return pass;
+    }
+    public boolean validatePassword(String passwordToVerify, String savedpassword) {
+        return savedpassword.equals(MD5Util.hash(passwordToVerify));
+    }
+
+    static class MD5Util {
+        public static String hash(String input) {
+            try {
+                MessageDigest md = MessageDigest.getInstance("MD5");
+                md.update(input.getBytes());
+                byte[] bytes = md.digest();
+                StringBuilder sb = new StringBuilder();
+                for (byte aByte : bytes) {
+                    sb.append(Integer.toString((aByte & 0xff) + 0x100, 16).substring(1));
+                }
+                return sb.toString();
+            } catch (NoSuchAlgorithmException e) {
+                throw new RuntimeException("MD5 algorithm not available", e);
+            }
+        }
+    }
 
     public void addPassword(Password password, int user_id) throws SQLException {
         // Ensure a user is logged in
@@ -239,7 +269,7 @@ public class DatabaseConnection implements Closeable {
         query = "INSERT INTO users (username, password) VALUES (?, ?)";
         insert = this.connection.prepareStatement(query);
         insert.setString(1, username);
-        insert.setString(2, password);
+        insert.setString(2, setEncryptedPasswordString(password)); //aplicamos HASH antes de guardar contraseña
         insert.executeUpdate();
         }
         catch (SQLException e) {
