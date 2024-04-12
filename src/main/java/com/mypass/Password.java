@@ -91,12 +91,6 @@ public class Password {
         return p.pass.equals(this.pass) && p.passName.equals(this.passName); //To change body of generated methods, choose Tools | Templates.
     }
 
-    /*@Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 53 * hash + Objects.hashCode(this.passName);
-        hash = 53 * hash + Objects.hashCode(this.pass);
-        return hash;
-    }*/
+ 
 
 }

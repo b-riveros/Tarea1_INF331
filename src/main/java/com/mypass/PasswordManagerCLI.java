@@ -69,7 +69,7 @@ public class PasswordManagerCLI {
         String[] args = userInput.split("\\s+");
 
         if (args.length < 2) {
-            printHelp();
+            System.out.println("Comando incorrecto.");
             return;
         }
 
@@ -78,35 +78,57 @@ public class PasswordManagerCLI {
 
         switch (command) {
             case "add":
-                if (args.length < 3) {
-                    System.out.println("Error: Missing password value for add command.");
+                if (args.length != 3) {
+                    System.out.println("Comando incorrecto, numero de argumentos incorrecto.");
                     return;
                 }
                 String password = args[2];
                 processAddPassword(name, password, user_id);
                 break;
             case "generate":
-                //int largo = Integer.valueOf(args[2]);????
-                String caracteres = "jbfgu12=";
-                int largo = 10;
+                int largo;
+                String caracteres;
+                if (args.length != 4) {
+                    System.out.println("Comando incorrecto, numero de argumentos incorrecto.");
+                    return;
+                }
+                try {
+                    largo = Integer.valueOf(args[3]);
+                } catch (NumberFormatException e) {
+                    System.out.println("Input invalida: " + args[3] + " no es un numero valido."); return;
+                }
+                try {
+                    caracteres = args[2];
+                } catch (NumberFormatException e) {
+                    System.out.println("Input invalida: " + args[3] + " no es un numero valido.");return;
+                }
+
                 processGeneratePassword(name, user_id, caracteres, largo); 
                 break;
             case "get":
+                if (args.length != 2) {
+                    System.out.println("Comando incorrecto, numero de argumentos incorrecto.");
+                    return;
+                }
                 processGetPassword(name);
                 break;
             case "remove":
+                if (args.length != 2) {
+                    System.out.println("Comando incorrecto, numero de argumentos incorrecto.");
+                    return;
+                }
                 processRemovePassword(name);
                 break;
             case "rename":
-                if (args.length < 3) {
-                    System.out.println("Error: Missing new name for rename command.");
+                if (args.length != 3) {
+                    System.out.println("Comando incorrecto, numero de argumentos incorrecto.");
                     return;
                 }
                 String newName = args[2];
                 processRenamePassword(name, newName);
                 break;
             default:
-                System.out.println("Error: Invalid command. Use 'help' for usage information.");
+                System.out.println("Error: Comando invalido. Usa 'help' para tener mas informacion.");
         }
     }
 
@@ -160,16 +182,17 @@ public class PasswordManagerCLI {
     }
 
     private void processGetPassword(String name) throws SQLException {
-        Password password = connection.getPassword(name);
-        
-        if (password != null) {
-            //System.out.println("Password retrieved:");
-            //System.out.println("  Name: " + password.getPasswordName());
-            String decryptedPassword = EncryptionUtil.decrypt(password.getPasswordString());
-            System.out.println("  Contrasena: " + decryptedPassword); // Consider masking retrieved password for security
-        } else {
+        try {
+            Password password = connection.getPassword(name);
+            if (password != null) {
+                String decryptedPassword = EncryptionUtil.decrypt(password.getPasswordString());
+                System.out.println("  Contrasena: " + decryptedPassword); // Consider masking retrieved password for security
+            }
+        } catch (SQLException e) {
             System.out.println("Contrasena con palabra clave '" + name + "' no fue encontrada.");
+            return;
         }
+
     }
 
     public static boolean contieneNumero(String str) {
@@ -211,10 +234,12 @@ public class PasswordManagerCLI {
                 }
                 if (!contieneCaracterEspecial(caracteres)) {
                     throw new IllegalArgumentException("Los caracteres deben incluir al menos un simbolo: @#$%^&+=.");
+
                 }
             }catch (IllegalArgumentException e) {
                 // Handle invalid password name exception
                 System.out.println(e.getMessage());  // Print the error message from the exception
+                return;
             }
 
             try {
@@ -223,6 +248,7 @@ public class PasswordManagerCLI {
                 }
             }catch (IllegalArgumentException e) {
                 System.out.println(e.getMessage());  // Print the error message from the exception
+                return;
             }
             
             String password = generateRandomString(caracteres, largo);
@@ -243,9 +269,6 @@ public class PasswordManagerCLI {
     }
 
     public static String generateRandomString(String characters, int length) {
-        if (length <= 7) {
-            throw new IllegalArgumentException("La longitud debe ser mayor que 7");
-        }
 
         // Convierte la cadena de caracteres en una lista de caracteres
         List<Character> charList = new ArrayList<>();
@@ -272,13 +295,30 @@ public class PasswordManagerCLI {
     }
 
     private void processRenamePassword(String name, String newName) throws SQLException {
-        connection.renamePassword(name, newName);
-        System.out.println("Contrasena actualizada con exito.");
+        try {
+            Password password = connection.getPassword(name);
+            if (password != null) {
+                connection.renamePassword(name, newName);
+                System.out.println("Contrasena actualizada con exito.");
+            }
+        } catch (SQLException e) {
+            System.out.println("Contrasena con palabra clave '" + name + "' no fue encontrada.");
+            return;
+        }
     }
 
     private void processRemovePassword(String name) throws SQLException {
-        connection.removePassword(name);
-        System.out.println("Contrasena borrada con exito.");
+        try {
+            Password password = connection.getPassword(name);
+            if (password != null) {
+                connection.removePassword(name);
+                System.out.println("Contrasena borrada con exito.");
+            }
+        } catch (SQLException e) {
+            System.out.println("Error al obtener la contraseña");
+            return;
+        }
+        
     }
 
 
