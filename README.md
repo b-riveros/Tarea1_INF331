@@ -1,34 +1,20 @@
-# Tarea 1 INF331: (Nombre programa)
+# Tarea 1 INF331: MYPASS
 
 ## Descripción
 
-(desc)
+Mypass es un programa de línea de comandos que permite a los usuarios almacenar y gestionar contraseñas de forma segura. 
+Proporciona opciones para agregar, recuperar, actualizar y eliminar contraseñas. 
+Además, se permite proporcionar información adicional a cada contraseña para facilitar la búsqueda del usuario, como una palabra clave. 
 
 ## Instalación
 
-ejemplo: Use the package manager [pip](https://pip.pypa.io/en/stable/) to install foobar.
+Se deben tener los siguientes prerequisitos: Java Development Kit (JDK) y Maven. Para construir el proyecto se debe ejecutar: <code>mvn install</code>
 
-## Uso
-
-(ejemplo)
-```python
-import foobar
-
-# returns 'words'
-foobar.pluralize('word')
-
-# returns 'geese'
-foobar.pluralize('goose')
-
-# returns 'phenomenon'
-foobar.singularize('phenomena')
-```
+Luego de  construir el proyecto en el mismo directorio se debe ejecutar:
+<code>mvn install</code>
 
 ## Como contribuir
 
-Pull requests are welcome. For major changes, please open an issue first
-to discuss what you would like to change.
-
-Please make sure to update tests as appropriate.
+Se aceptan pull requests.
 
 ## Licencia
