@@ -127,8 +127,19 @@ public class PasswordManagerCLI {
                 String newName = args[2];
                 processRenamePassword(name, newName);
                 break;
+            case "update":
+                if (args.length != 3) {
+                    System.out.println("Comando incorrecto, numero de argumentos incorrecto.");
+                    return;
+                }
+                String newPassword = args[2];
+                processUpdatePassword(name, newPassword);
+                break;
+            case "help":
+                printHelp();
+
             default:
-                System.out.println("Error: Comando invalido. Usa 'help' para tener mas informacion.");
+                System.out.println("Error: Comando invalido.");
         }
     }
 
@@ -176,8 +187,8 @@ public class PasswordManagerCLI {
                 throw new IllegalArgumentException("Contrasena debe contener al menos un caracter especial: @#$%^&+=");
             }
         } catch (IllegalArgumentException e) {
-            logger.error("Contrasena ingresada no valida", e);
-            throw e; // Re-throw the exception for further handling
+            logger.error("Contrasena ingresada no valida: " + e.getMessage());
+            throw e;
         }
     }
 
@@ -223,7 +234,7 @@ public class PasswordManagerCLI {
     private void processGeneratePassword(String name, int user_id, String caracteres, int largo) throws SQLException {
         try { 
             if (connection.passwordNameExists(name, user_id)) {
-                System.out.println("Error: Ya existe una contrasena con la palabra clave '" + name + "' asociada.");
+                System.out.println("Error: Ya existe una contraseña con la palabra clave '" + name + "' asociada.");
                 return;
             }
             validatePasswordName(name);
@@ -259,7 +270,7 @@ public class PasswordManagerCLI {
             Password newPassword = new Password(name, encryptedPassword);
             try {
                 connection.addPassword(newPassword, user_id);
-                System.out.println("Contrasena fue agregada con exito!");
+                System.out.println("Contraseña fue agregada con exito!");
             } catch (SQLException e) {
                 e.printStackTrace();
             }
@@ -299,10 +310,23 @@ public class PasswordManagerCLI {
             Password password = connection.getPassword(name);
             if (password != null) {
                 connection.renamePassword(name, newName);
-                System.out.println("Contrasena actualizada con exito.");
+                System.out.println("Contraseña actualizada con exito.");
             }
         } catch (SQLException e) {
-            System.out.println("Contrasena con palabra clave '" + name + "' no fue encontrada.");
+            System.out.println("Contraseña con palabra clave '" + name + "' no fue encontrada.");
+            return;
+        }
+    }
+
+    private void processUpdatePassword(String name, String newPassword) throws SQLException {
+        try {
+            Password password = connection.getPassword(name);
+            if (password != null) {
+                connection.updatePassword(password, newPassword);
+                System.out.println("Contraseña actualizada con exito.");
+            }
+        } catch (SQLException e) {
+            System.out.println("Contraseña con palabra clave '" + name + "' no fue encontrada.");
             return;
         }
     }
@@ -312,7 +336,7 @@ public class PasswordManagerCLI {
             Password password = connection.getPassword(name);
             if (password != null) {
                 connection.removePassword(name);
-                System.out.println("Contrasena borrada con exito.");
+                System.out.println("Contraseña borrada con exito.");
             }
         } catch (SQLException e) {
             System.out.println("Error al obtener la contraseña");
@@ -322,13 +346,11 @@ public class PasswordManagerCLI {
     }
 
 
-
-    
     private void processAddPassword(String name, String password, int user_id) throws SQLException {
         try {
             // Luego se revisa si ya existe una password con ese nombre
             if (connection.passwordNameExists(name, user_id)) {
-                System.out.println("Error: Ya existe una contrasena con la palabra clave '" + name + "' asociada.");
+                System.out.println("Error: Ya existe una contraseña con la palabra clave '" + name + "' asociada.");
                 return;
             }
 
@@ -357,13 +379,15 @@ public class PasswordManagerCLI {
 
 
     public void printHelp() {
-        System.out.println("MyPass Manager CLI Usage:");
-        System.out.println("  add <name> <password>     - Agregar una nueva contrasena");
-        System.out.println("  generate <name> <caracteres deseados> <largo> - Generar automáticamente una nueva contrasena");
-        System.out.println("  get <name>                - Recuperar una contrasena a traves de la palabra clave");
-        System.out.println("  remove <name>             - Eliminar una contrasena");
-        System.out.println("  rename <name> <new_name>  - Actualizar una contrasena");
-        System.out.println("  exit                      - Salir");
+        System.out.println("\nMyPass Usage:");
+        System.out.println("  add <name> <password>                         - Agregar una nueva contraseña");
+        System.out.println("  generate <name> <caracteres deseados> <largo> - Generar automáticamente una nueva contraseña");
+        System.out.println("  get <name>                                    - Recuperar una contraseña a traves de la palabra clave");
+        System.out.println("  remove <name>                                 - Eliminar una contraseña");
+        System.out.println("  rename <name> <new_name>                      - Actualizar nombre de una contraseña");
+        System.out.println("  update <name> <new_password>                  - Actualizar una contraseña");
+        System.out.println("  help                                          - Instrucciones de uso");
+        System.out.println("  exit                                          - Salir\n");
 
     }
 }
