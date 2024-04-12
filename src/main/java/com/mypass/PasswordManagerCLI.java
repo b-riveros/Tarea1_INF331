@@ -70,6 +70,7 @@ public class PasswordManagerCLI {
 
         if (args.length < 2) {
             System.out.println("Comando incorrecto.");
+            printHelp();
             return;
         }
 
@@ -143,7 +144,7 @@ public class PasswordManagerCLI {
         }
     }
 
-    private void validatePasswordName(String name) throws IllegalArgumentException {
+    private boolean validatePasswordName(String name) throws IllegalArgumentException {
         try {
           if (name.isEmpty()) {
             throw new IllegalArgumentException("Palabra clave de la contrasena no puede ser vacia.");
@@ -151,13 +152,15 @@ public class PasswordManagerCLI {
           if (name.contains(" ")) {
             throw new IllegalArgumentException("Palabra clave de la contrasena no puede tener espacios.");
           }
+          return true;
         } catch (IllegalArgumentException e) {
           logger.error("Palabra clave de contrasena no valida.", e);
-          throw e; // Re-throw the exception for further handling
+          return false; // Validation failed
+
         }
       }
     
-      private void validatePasswordString(String pass) throws IllegalArgumentException {
+      private boolean validatePasswordString(String pass) throws IllegalArgumentException {
         try {
             if (pass.isEmpty()) {
                 throw new IllegalArgumentException("Contrasena no puede ser vacia.");
@@ -186,9 +189,10 @@ public class PasswordManagerCLI {
             if (!containsSpecialChar) {
                 throw new IllegalArgumentException("Contrasena debe contener al menos un caracter especial: @#$%^&+=");
             }
+            return true; // Validation passed
         } catch (IllegalArgumentException e) {
             logger.error("Contrasena ingresada no valida: " + e.getMessage());
-            throw e;
+            return false;
         }
     }
 
@@ -270,7 +274,6 @@ public class PasswordManagerCLI {
             Password newPassword = new Password(name, encryptedPassword);
             try {
                 connection.addPassword(newPassword, user_id);
-                System.out.println("Contraseña fue agregada con exito!");
             } catch (SQLException e) {
                 e.printStackTrace();
             }
@@ -347,16 +350,16 @@ public class PasswordManagerCLI {
 
 
     private void processAddPassword(String name, String password, int user_id) throws SQLException {
-        try {
             // Luego se revisa si ya existe una password con ese nombre
             if (connection.passwordNameExists(name, user_id)) {
                 System.out.println("Error: Ya existe una contraseña con la palabra clave '" + name + "' asociada.");
                 return;
             }
 
-            // Validate password name (throws exception for invalid names)
-            validatePasswordName(name);
-            validatePasswordString(password);
+            // Check if validation failed
+            if (!validatePasswordName(name) || !validatePasswordString(password)) {
+                return; // Stop further execution if validation fails
+            }
 
             // Encrypt the password before saving it
             String encryptedPassword = EncryptionUtil.encrypt(password);
@@ -365,16 +368,11 @@ public class PasswordManagerCLI {
             Password newPassword = new Password(name, encryptedPassword);
             try {
                 connection.addPassword(newPassword, user_id);
-                System.out.println("Contrasena fue agregada con exito!");
             } catch (SQLException e) {
                 // Handle SQL exception if needed
                 // Loggin pendiente y etc
                 e.printStackTrace();
             }
-        } catch (IllegalArgumentException e) {
-            // Handle invalid password name exception
-            System.out.println(e.getMessage());  // Print the error message from the exception
-        }
     }
 
 
