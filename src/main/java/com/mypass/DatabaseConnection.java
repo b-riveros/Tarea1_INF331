@@ -42,7 +42,6 @@ public class DatabaseConnection implements Closeable {
         } catch (SQLException | ClassNotFoundException e) {
             // Log the error using a logging library
             System.err.println("Error occurred while connecting to database:");
-            e.printStackTrace();
             throw e;
         }
     }
@@ -149,7 +148,7 @@ public class DatabaseConnection implements Closeable {
         // Ensure a user is logged in
         
         if (currentUserId == -1) {
-            throw new SQLException("No user is logged in");
+            throw new SQLException("No hay ningún usuario con su sesión abierta");
         }
 
         PreparedStatement insert = null;
@@ -177,7 +176,7 @@ public class DatabaseConnection implements Closeable {
     public Password getPassword(String nameOfPass) throws SQLException {
         // Ensure a user is logged in
         if (currentUserId == -1) {
-            throw new SQLException("No user is logged in");
+            throw new SQLException("No hay ningún usuario con su sesión abierta");
         }
         ResultSet results;
         PreparedStatement getPassword;
@@ -196,7 +195,7 @@ public class DatabaseConnection implements Closeable {
     public void removePassword(String name) throws SQLException {
        // Ensure a user is logged in
         if (currentUserId == -1) {
-            throw new SQLException("No user is logged in");
+            throw new SQLException("No hay ningún usuario con su sesión abierta");
         }
         PreparedStatement removePassword;
         String query = "DELETE FROM passwords where namekey= ? and user_id = ?";
@@ -211,7 +210,7 @@ public class DatabaseConnection implements Closeable {
     public void renamePassword(String oldName, String newName) throws SQLException {
         // Ensure a user is logged in
         if (currentUserId == -1) {
-            throw new SQLException("No user is logged in");
+            throw new SQLException("No hay ningún usuario con su sesión abierta");
         }
         PreparedStatement renamePassword;
         String query = "UPDATE passwords set namekey = ? where namekey = ? and user_id = ?";
@@ -224,16 +223,17 @@ public class DatabaseConnection implements Closeable {
             renamePassword.close();
     }
 
-    public void updatePassword(Password newP) throws SQLException {
+    public void updatePassword(Password newP, String newPassword) throws SQLException {
         // Ensure a user is logged in
         if (currentUserId == -1) {
-            throw new SQLException("No user is logged in");
+            throw new SQLException("No hay ningún usuario con su sesión abierta");
         }
         PreparedStatement update;
-        String query = "UPDATE passwords set password = ? where namekey = ?";
+        String query = "UPDATE passwords set password = ? where namekey = ? AND user_id = ?";
         update = this.connection.prepareStatement(query);
-        update.setString(1, newP.getPasswordString());
-        update.setString(2, newP.getPasswordString());
+        update.setString(1, newPassword);
+        update.setString(2, newP.getPasswordName());
+        update.setInt(3, currentUserId);
         update.executeUpdate();
     }
 
@@ -262,28 +262,26 @@ public class DatabaseConnection implements Closeable {
             insert.setString(1, username);
             resultSet = insert.executeQuery();
             if (resultSet.next() && resultSet.getInt(1) > 0) {
-                System.err.println("Username already exists. Please choose a different username.");
+                System.err.println("Nombre de usuario ya existe. Por favor elegir otro nombre.");
                 return; // Exit the method if the username already exists
             }
 
         query = "INSERT INTO users (username, password) VALUES (?, ?)";
         insert = this.connection.prepareStatement(query);
         insert.setString(1, username);
-        insert.setString(2, setEncryptedPasswordString(password)); //aplicamos HASH antes de guardar contraseña
+        insert.setString(2, setEncryptedPasswordString(password)); 
+        //aplicamos HASH antes de guardar contraseña
         insert.executeUpdate();
         }
         catch (SQLException e) {
             System.err.println("Error occurred while creating user account: " + e.getMessage());
-            // Handle the SQLException (log, inform user, etc.)
-            // You can re-throw the exception for further handling
+            logger.info("Failed while creating user account: '" + username + "'. " + e.getMessage() );
         }
         finally {
             try {
                 if (insert != null)
                     insert.close();
             } catch (SQLException e) {
-                // Handle any errors that occur while closing the statement
-                // For example, you can print the error message to the console
                 System.err.println("Error occurred while closing PreparedStatement: " + e.getMessage());
             }
     }
