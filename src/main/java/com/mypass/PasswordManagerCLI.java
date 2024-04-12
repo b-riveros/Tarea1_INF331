@@ -79,16 +79,26 @@ public class PasswordManagerCLI {
         switch (command) {
             case "add":
                 if (args.length < 3) {
-                    System.out.println("Error: Missing password value for add command.");
+                    System.out.println("Error: Falta password para el comando add.");
                     return;
                 }
                 String password = args[2];
                 processAddPassword(name, password, user_id);
                 break;
             case "generate":
-                //int largo = Integer.valueOf(args[2]);????
-                String caracteres = "jbfgu12=";
-                int largo = 10;
+                int largo;
+                String caracteres;
+                try {
+                    largo = Integer.valueOf(args[3]);
+                } catch (NumberFormatException e) {
+                    System.out.println("Input invalida: " + args[3] + " no es un numero valido."); return;
+                }
+                try {
+                    caracteres = args[2];
+                } catch (NumberFormatException e) {
+                    System.out.println("Input invalida: " + args[3] + " no es un numero valido.");return;
+                }
+
                 processGeneratePassword(name, user_id, caracteres, largo); 
                 break;
             case "get":
@@ -99,14 +109,14 @@ public class PasswordManagerCLI {
                 break;
             case "rename":
                 if (args.length < 3) {
-                    System.out.println("Error: Missing new name for rename command.");
+                    System.out.println("Error: Falta el new_name en el comando rename.");
                     return;
                 }
                 String newName = args[2];
                 processRenamePassword(name, newName);
                 break;
             default:
-                System.out.println("Error: Invalid command. Use 'help' for usage information.");
+                System.out.println("Error: Comando invalido. Usa 'help' para tener mas informacion.");
         }
     }
 
@@ -163,8 +173,6 @@ public class PasswordManagerCLI {
         Password password = connection.getPassword(name);
         
         if (password != null) {
-            //System.out.println("Password retrieved:");
-            //System.out.println("  Name: " + password.getPasswordName());
             String decryptedPassword = EncryptionUtil.decrypt(password.getPasswordString());
             System.out.println("  Contrasena: " + decryptedPassword); // Consider masking retrieved password for security
         } else {

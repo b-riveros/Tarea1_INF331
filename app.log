@@ -154,3 +154,9 @@ java.lang.IllegalArgumentException: Contrasena debe contener al menos un caracte
 23:15:59.823 [com.mypass.Main.main()] INFO  com.mypass.Password - Successful login: User 'denyss' logged in
 23:17:53.060 [com.mypass.Main.main()] INFO  com.mypass.Password - Successful login: User 'denyss' logged in
 23:19:18.569 [com.mypass.Main.main()] INFO  com.mypass.Password - Successful login: User 'denyss' logged in
+23:30:21.829 [com.mypass.Main.main()] INFO  com.mypass.Password - Successful login: User 'denyss' logged in
+23:36:54.784 [com.mypass.Main.main()] INFO  com.mypass.Password - Successful login: User 'denyss' logged in
+23:40:42.422 [com.mypass.Main.main()] INFO  com.mypass.Password - Successful login: User 'denyss' logged in
+23:45:16.131 [com.mypass.Main.main()] INFO  com.mypass.Password - Successful login: User 'denyss' logged in
+23:47:40.491 [com.mypass.Main.main()] INFO  com.mypass.Password - Successful login: User 'denyss' logged in
+23:49:24.568 [com.mypass.Main.main()] INFO  com.mypass.Password - Successful login: User 'denyss' logged in
