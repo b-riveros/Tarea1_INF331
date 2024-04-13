@@ -14,7 +14,7 @@ Luego de  construir el proyecto en el mismo directorio se debe ejecutar:
 <code>mvn install</code>
 
 Para compilar el programa se utiliza: <code>mvn compile</code>
-Y para ejecutarlo: <code>mvn exec:java -Dexec.mainClass="com.example.Main"</code>
+Y para ejecutarlo: <code>mvn exec:java -Dexec.mainClass="com.mypass.Main"</code>
 
 ## Como contribuir
 
