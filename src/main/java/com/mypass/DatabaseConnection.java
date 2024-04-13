@@ -159,6 +159,8 @@ public class DatabaseConnection implements Closeable {
             insert.setString(2, password.getPasswordName());
             insert.setString(3, password.getPasswordString());
             insert.executeUpdate();
+
+            System.out.println("Contraseña fue agregada con exito!");
         }
         catch (SQLException e) {
             throw e;
