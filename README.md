@@ -6,7 +6,7 @@ Mypass es un programa de línea de comandos que permite a los usuarios almacenar
 Proporciona opciones para agregar, recuperar, actualizar y eliminar contraseñas. 
 Además, se permite proporcionar información adicional a cada contraseña para facilitar la búsqueda del usuario, como una palabra clave. 
 
-## Instalación
+## Instalación y uso
 
 Se deben tener los siguientes prerequisitos: Java Development Kit (JDK) y Maven. Para construir el proyecto se debe ejecutar: <code>mvn install</code>
 
@@ -20,3 +20,14 @@ Y para ejecutarlo: <code>mvn exec:java -Dexec.mainClass="com.mypass.Main"</code>
 
 Se aceptan pull requests.
 
+## Licencia
+
+Se permite la utilización de este código para
+
+-Uso comercial
+
+-Modificacion
+
+-Uso patentado
+
+-Uso privado
