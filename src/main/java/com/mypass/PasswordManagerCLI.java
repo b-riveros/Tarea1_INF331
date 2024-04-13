@@ -241,41 +241,39 @@ public class PasswordManagerCLI {
                 System.out.println("Error: Ya existe una contraseña con la palabra clave '" + name + "' asociada.");
                 return;
             }
-            validatePasswordName(name);
-
-            try {
-                if (!contieneNumero(caracteres)){
-                    throw new IllegalArgumentException("Los caracteres deben incluir al menos un numero.");
+            if(validatePasswordName(name)){
+                try {
+                    if (!contieneNumero(caracteres)){
+                        throw new IllegalArgumentException("Los caracteres deben incluir al menos un numero.");
+                    }
+                    if (!contieneCaracterEspecial(caracteres)) {
+                        throw new IllegalArgumentException("Los caracteres deben incluir al menos un simbolo: @#$%^&+=.");
+    
+                    }
+                }catch (IllegalArgumentException e) {
+                    // Handle invalid password name exception
+                    System.out.println(e.getMessage());  // Print the error message from the exception
+                    return;
                 }
-                if (!contieneCaracterEspecial(caracteres)) {
-                    throw new IllegalArgumentException("Los caracteres deben incluir al menos un simbolo: @#$%^&+=.");
-
+                try {
+                    if (largo<8){
+                        throw new IllegalArgumentException("La contraseña debe tener un largo de minimo 8");
+                    }
+                }catch (IllegalArgumentException e) {
+                    System.out.println(e.getMessage());  // Print the error message from the exception
+                    return;
                 }
-            }catch (IllegalArgumentException e) {
-                // Handle invalid password name exception
-                System.out.println(e.getMessage());  // Print the error message from the exception
-                return;
-            }
+                String password = generateRandomString(caracteres, largo);
 
-            try {
-                if (largo<8){
-                    throw new IllegalArgumentException("La contraseña debe tener un largo de minimo 8");
+                System.out.println("Contraseña generada: "+ password);
+
+                String encryptedPassword = EncryptionUtil.encrypt(password);
+                Password newPassword = new Password(name, encryptedPassword);
+                try {
+                    connection.addPassword(newPassword, user_id);
+                } catch (SQLException e) {
+                    e.printStackTrace();
                 }
-            }catch (IllegalArgumentException e) {
-                System.out.println(e.getMessage());  // Print the error message from the exception
-                return;
-            }
-            
-            String password = generateRandomString(caracteres, largo);
-
-            System.out.println("Contraseña generada: "+ password);
-
-            String encryptedPassword = EncryptionUtil.encrypt(password);
-            Password newPassword = new Password(name, encryptedPassword);
-            try {
-                connection.addPassword(newPassword, user_id);
-            } catch (SQLException e) {
-                e.printStackTrace();
             }
         } catch (IllegalArgumentException e) {
             System.out.println(e.getMessage());  // Print the error message from the exception
@@ -290,7 +288,6 @@ public class PasswordManagerCLI {
             charList.add(c);
         }
 
-        // Inicializa el generador de números aleatorios
         Random random = new Random();
 
         // Mezcla los caracteres aleatoriamente
@@ -325,7 +322,11 @@ public class PasswordManagerCLI {
         try {
             Password password = connection.getPassword(name);
             if (password != null) {
-                connection.updatePassword(password, newPassword);
+                if (!validatePasswordName(newPassword) || !validatePasswordString(newPassword)) {
+                    return; 
+                }
+                String encryptedPassword = EncryptionUtil.encrypt(newPassword);
+                connection.updatePassword(password, encryptedPassword);
                 System.out.println("Contraseña actualizada con exito.");
             }
         } catch (SQLException e) {
