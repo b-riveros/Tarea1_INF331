@@ -20,4 +20,3 @@ Y para ejecutarlo: <code>mvn exec:java -Dexec.mainClass="com.mypass.Main"</code>
 
 Se aceptan pull requests.
 
-## Licencia
